@@ -1,0 +1,23 @@
+<!-- add_subscription.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Add New Subscription</h2>
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">{{ form.name.label(class="form-label") }} {{ form.name(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.cost.label(class="form-label") }} {{ form.cost(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.billing_frequency.label(class="form-label") }} {{ form.billing_frequency(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.next_billing_date.label(class="form-label") }} {{ form.next_billing_date(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.usage_frequency.label(class="form-label") }} {{ form.usage_frequency(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.category.label(class="form-label") }} {{ form.category(class="form-control") }}</div>
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Slayer 💸 - Stop Wasting Money</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* --- 3D Hero Section --- */
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #536976 0%, #292E49 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            padding: 2rem 3rem;
+            border-radius: 20px;
+        }
+
+        .hero h1 {
+            font-weight: 900;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-cta {
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .btn-cta:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+        }
+
+        /* --- General Section Styling --- */
+        .section {
+            padding: 100px 0;
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.1);
+            padding: 40px;
+            text-align: center;
+            background-color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(50px);
+            height: 100%; /* <-- Ensures all cards have the same height */
+        }
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,.15);
+        }
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            background: -webkit-linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .info-section .img-container {
+            perspective: 1000px;
+        }
+
+        .info-section .animated-svg {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.1);
+            transition: transform 0.1s linear; /* Smooth parallax transition */
+            width: 100%;
+            height: auto;
+        }
+
+        /* --- New CTA Section --- */
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        .cta-section.visible {
+             opacity: 1;
+            transform: translateY(0);
+        }
+        .cta-section h2 {
+            font-weight: 700;
+        }
+
+        /* --- Animated SVG Styles --- */
+        .svg-line-chart-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw-line 2s ease-in-out forwards;
+        }
+        .svg-bar-chart-bar {
+            transform-origin: bottom;
+            transform: scaleY(0);
+            animation: grow-bar 1s ease-in-out forwards;
+        }
+        .svg-donut-chart-segment {
+             stroke-dasharray: 283;
+             stroke-dashoffset: 283;
+             animation: draw-donut 1.5s ease-out forwards;
+        }
+        @keyframes draw-line { to { stroke-dashoffset: 0; } }
+        @keyframes grow-bar { to { transform: scaleY(1); } }
+        @keyframes draw-donut { to { stroke-dashoffset: 0; } }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('landing') }}" style="font-weight: 700;">
+                <i class="fas fa-hand-holding-usd"></i> Subscription Slayer
+            </a>
+            <div>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <canvas id="bg-canvas"></canvas>
+        <div class="hero-content">
+            <h1>Stop Wasting Money on Subscriptions.</h1>
+            <p>Track, manage, and cancel unwanted subscriptions with ease. Start saving money today.</p>
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg btn-cta">Get Started for Free</a>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5 display-5 fw-bold">Why You'll Love It</h2>
+            <div class="row g-4 d-flex align-items-stretch"> <!-- <-- Flexbox for equal height -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+                        <h4>Track Everything</h4>
+                        <p>Get a clear overview of all your recurring payments in one simple dashboard.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card" style="transition-delay: 0.2s;">
+                        <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+                        <h4>Analyze Value</h4>
+                        <p>Our smart scoring tells you which subscriptions are worth the money and which aren't.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card" style="transition-delay: 0.4s;">
+                        <div class="feature-icon"><i class="fas fa-bell"></i></div>
+                        <h4>Get Smart Alerts</h4>
+                        <p>Receive notifications for upcoming payments so you're never caught off guard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="section info-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 img-container">
+                    <!-- START: Animated SVG Dashboard -->
+                    <svg viewBox="0 0 600 450" class="animated-svg parallax-img" alt="Animated Dashboard Preview" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="600" height="450" rx="20" fill="#FFFFFF"/>
+                        <!-- Header -->
+                        <rect x="20" y="20" width="150" height="20" rx="5" fill="#E9ECEF"/>
+                        <rect x="540" y="20" width="40" height="20" rx="10" fill="#667EEA"/>
+                        <!-- Sidebar -->
+                        <rect x="20" y="60" width="120" height="370" rx="10" fill="#F8F9FA"/>
+                        <rect x="40" y="80" width="80" height="10" rx="5" fill="#E9ECEF"/>
+                        <rect x="40" y="110" width="60" height="10" rx="5" fill="#E9ECEF"/>
+                        <rect x="40" y="140" width="70" height="10" rx="5" fill="#E9ECEF"/>
+                        <!-- Main Content Area -->
+                        <!-- Line Chart -->
+                        <rect x="160" y="60" width="420" height="180" rx="10" fill="#F8F9FA"/>
+                        <path d="M 180 180 Q 250 100, 320 150 T 460 120 L 560 90" stroke="#764BA2" stroke-width="4" fill="none" class="svg-line-chart-path"/>
+                        <!-- Bar Chart -->
+                        <rect x="160" y="260" width="200" height="170" rx="10" fill="#F8F9FA"/>
+                        <rect x="180" y="350" width="30" height="80" fill="#667EEA" class="svg-bar-chart-bar" style="animation-delay: 0.2s;"/>
+                        <rect x="220" y="380" width="30" height="50" fill="#667EEA" class="svg-bar-chart-bar" style="animation-delay: 0.4s;"/>
+                        <rect x="260" y="320" width="30" height="110" fill="#667EEA" class="svg-bar-chart-bar" style="animation-delay: 0.6s;"/>
+                        <!-- Donut Chart -->
+                        <rect x="380" y="260" width="200" height="170" rx="10" fill="#F8F9FA"/>
+                        <circle cx="480" cy="345" r="45" fill="none" stroke="#E9ECEF" stroke-width="15"/>
+                        <circle cx="480" cy="345" r="45" fill="none" stroke="#764BA2" stroke-width="15" class="svg-donut-chart-segment" style="stroke-dasharray: 180 283; transform: rotate(-90deg); transform-origin: 50% 50%;"/>
+                        <circle cx="480" cy="345" r="45" fill="none" stroke="#8E54E9" stroke-width="15" class="svg-donut-chart-segment" style="stroke-dasharray: 80 283; transform: rotate(90deg); transform-origin: 50% 50%; animation-delay: 0.5s;"/>
+                    </svg>
+                    <!-- END: Animated SVG Dashboard -->
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="display-5 fw-bold">Gain Full Control of Your Finances</h2>
+                    <p class="lead text-muted mt-3">Subscription Slayer empowers you to see exactly where your money is going each month. By categorizing your spending and analyzing usage, you can make informed decisions and cut costs effectively.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Call to Action Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="display-5 mb-4">Ready to Slay Your Subscriptions?</h2>
+            <p class="lead mb-4">Sign up for free and start taking control of your recurring payments today.</p>
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg btn-cta">Claim Your Free Account</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 bg-dark text-white text-center">
+        <p class="mb-0">&copy; 2024 Subscription Slayer. All Rights Reserved.</p>
+    </footer>
+
+    <!-- 3D Animation and Scroll Animation Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- 3D BACKGROUND SCRIPT ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Create floating cards
+            const cards = [];
+            const cardGeometry = new THREE.BoxGeometry(2, 1.25, 0.1);
+            const cardMaterials = [
+                new THREE.MeshStandardMaterial({ color: 0x667eea }),
+                new THREE.MeshStandardMaterial({ color: 0x764ba2 }),
+                new THREE.MeshStandardMaterial({ color: 0x8E54E9 }),
+                new THREE.MeshStandardMaterial({ color: 0x4776E6 }),
+            ];
+            
+            for (let i = 0; i < 50; i++) {
+                const material = cardMaterials[Math.floor(Math.random() * cardMaterials.length)];
+                const card = new THREE.Mesh(cardGeometry, material);
+                
+                card.position.set(
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20
+                );
+                
+                card.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+
+                const scale = Math.random() * 0.5 + 0.5;
+                card.scale.set(scale, scale, scale);
+
+                card.userData.spinX = Math.random() * 0.005 + 0.001;
+                card.userData.spinY = Math.random() * 0.005 + 0.001;
+
+                scene.add(card);
+                cards.push(card);
+            }
+
+            camera.position.z = 5;
+
+            // Mouse interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                cards.forEach(card => {
+                    card.rotation.x += card.userData.spinX;
+                    card.rotation.y += card.userData.spinY;
+                });
+
+                // Move camera based on mouse
+                camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+                camera.position.y += (mouseY * 0.5 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        });
+
+        // --- SCROLL ANIMATION SCRIPT ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .cta-section').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- PARALLAX SCROLL SCRIPT ---
+        const parallaxImg = document.querySelector('.parallax-img');
+        if (parallaxImg) {
+            window.addEventListener('scroll', () => {
+                const scrollPosition = window.pageYOffset;
+                const elementPosition = parallaxImg.parentElement.offsetTop;
+                // Start effect when the image container is in view
+                if (scrollPosition > elementPosition - window.innerHeight && scrollPosition < elementPosition + parallaxImg.parentElement.offsetHeight) {
+                    const offset = (scrollPosition - elementPosition) * 0.1; // Adjust 0.1 to change intensity
+                    parallaxImg.style.transform = `translateY(${offset}px)`;
+                }
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

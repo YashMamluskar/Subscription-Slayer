@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .kpi-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+    }
+    .kpi-card h4 {
+        font-weight: 300;
+        font-size: 1.2rem;
+    }
+    .kpi-card .display-4 {
+        font-weight: 700;
+    }
+    .recommendation-card {
+        background-color: #fff3cd;
+        border-left: 5px solid #ffc107;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    .action-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* --- START: NEW STYLES FOR VALUE METER --- */
+    .value-meter-container {
+        position: relative;
+        width: 100px; /* Adjust width as needed */
+        height: 10px;
+        background-color: #e9ecef;
+        border-radius: 5px;
+        margin: 0 auto; /* Center the meter */
+        cursor: pointer;
+    }
+
+    .value-meter-bar {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+    }
+
+    .value-meter-tooltip {
+        visibility: hidden;
+        width: 160px;
+        background-color: #343a40;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        bottom: 150%; /* Position above the meter */
+        left: 50%;
+        margin-left: -80px; /* Use half of the width to center */
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .value-meter-tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #343a40 transparent transparent transparent;
+    }
+
+    .value-meter-container:hover .value-meter-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    /* --- END: NEW STYLES --- */
+</style>
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Your Subscriptions</h4>
+                <a href="{{ url_for('add_subscription') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add New</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Cost</th>
+                                <th>Next Bill Date</th>
+                                <th class="text-center">Value Meter</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subscriptions %}
+                            <tr>
+                                <td><strong>{{ sub.name }}</strong><br><small class="text-muted">{{ sub.category }}</small></td>
+                                <td>${{ "%.2f"|format(sub.cost) }} / {{ sub.billing_frequency[:-2] }}</td>
+                                <td>{{ sub.next_billing_date.strftime('%b %d, %Y') }}</td>
+                                
+                                <!-- START: REPLACEMENT FOR THE VALUE BADGE TD -->
+                                <td class="text-center">
+                                    {% set score = sub.value_score() %}
+                                    {% set bar_color = '#dc3545' if score < 40 else ('#ffc107' if score < 75 else '#198754') %}
+                                    
+                                    <div class="value-meter-container">
+                                        <div class="value-meter-bar" style="width: {{ score }}%; background-color: {{ bar_color }};"></div>
+                                        <span class="value-meter-tooltip">
+                                            {% if score < 40 %}
+                                                Poor Value: High cost for its usage.
+                                            {% elif score < 75 %}
+                                                Fair Value: Could be better.
+                                            {% else %}
+                                                Great Value: Good cost and usage!
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </td>
+                                <!-- END: REPLACEMENT -->
+
+                                <td class="text-end">
+                                    <a href="{{ url_for('edit_subscription', subscription_id=sub.id) }}" class="btn btn-outline-primary action-btn"><i class="fas fa-pencil-alt"></i></a>
+                                    <form action="{{ url_for('delete_subscription', subscription_id=sub.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger action-btn"><i class="fas fa-trash-alt"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card kpi-card mb-4">
+            <div class="card-body">
+                <h4>Monthly Total</h4>
+                <h2 class="display-4">${{ "%.2f"|format(monthly_total) }}</h2>
+            </div>
+        </div>
+
+        <!-- UPCOMING PAYMENTS CARD -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-alt"></i> Coming Up Soon</h5>
+                {% if upcoming_subscriptions %}
+                    <ul class="list-group list-group-flush">
+                        {% for sub in upcoming_subscriptions %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <strong>{{ sub.name }}</strong>
+                                    <small class="d-block text-muted">
+                                        ${{ "%.2f"|format(sub.cost) }} on {{ sub.next_billing_date.strftime('%b %d') }}
+                                    </small>
+                                </div>
+                                {% set days_left = (sub.next_billing_date - today).days %}
+                                <span class="badge bg-secondary rounded-pill">
+                                    {% if days_left == 0 %}
+                                        Today
+                                    {% elif days_left == 1 %}
+                                        1 day
+                                    {% else %}
+                                        {{ days_left }} days
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No payments due in the next 14 days. You're all clear!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card recommendation-card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-lightbulb"></i> Slayer's Recommendations</h5>
+                {% if recommendations %}
+                    <p>Cancel these to save <strong>${{ "%.2f"|format(potential_savings) }}/month</strong>:</p>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for rec in recommendations %}
+                            <li class="list-group-item bg-transparent px-0">{{ rec.name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No recommendations right now. Well done!</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Spending by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_spending.keys()|list|tojson }},
+            datasets: [{
+                data: {{ category_spending.values()|list|tojson }},
+                backgroundColor: ['#667eea', '#764ba2', '#f8b195', '#f67280', '#c06c84'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,194 @@
+<!-- register.html -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Styles are identical to login.html for consistency */
+    body {
+        background: #1a202c;
+        overflow: hidden;
+    }
+
+    .auth-page-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 60px;
+    }
+
+    #auth-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: linear-gradient(135deg, #536976 0%, #292E49 100%);
+    }
+
+    .auth-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        max-width: 900px;
+        width: 100%;
+        margin: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+
+    .auth-panel {
+        padding: 3rem;
+    }
+
+    .auth-showcase {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .auth-showcase h2 {
+        font-weight: 700;
+        font-size: 2.5rem;
+    }
+
+    .form-control {
+        background: #f0f2f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 1rem;
+    }
+    .form-control:focus {
+        background: white;
+        box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        border-color: #a3b0f3;
+    }
+    .btn-slayer {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: bold;
+        transition: all 0.4s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .btn-slayer:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .auth-title {
+        font-weight: 700;
+        color: #343a40;
+    }
+
+    @media (max-width: 768px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+        }
+        .auth-showcase {
+            display: none;
+        }
+    }
+</style>
+
+<div class="auth-page-wrapper">
+    <canvas id="auth-canvas"></canvas>
+    <div class="auth-container">
+        <div class="auth-panel">
+            <h2 class="auth-title text-center mb-4">Create Your Account</h2>
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="form-floating mb-3">
+                    {{ form.username(class="form-control", placeholder="Username") }}
+                    {{ form.username.label }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.email(class="form-control", placeholder="Email") }}
+                    {{ form.email.label }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.password(class="form-control", placeholder="Password") }}
+                    {{ form.password.label }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.confirm_password(class="form-control", placeholder="Confirm Password") }}
+                    {{ form.confirm_password.label }}
+                </div>
+                <div class="d-grid mt-4">
+                    {{ form.submit(class="btn btn-slayer") }}
+                </div>
+                <div class="text-center mt-3">
+                    <small>Already have an account? <a href="{{ url_for('login') }}">Log In</a></small>
+                </div>
+            </form>
+        </div>
+        <div class="auth-showcase">
+            <i class="fas fa-rocket fa-4x mb-4"></i>
+            <h2>Join Us</h2>
+            <p>Start your journey to financial freedom today.</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    // Reusing the 3D animation script
+    document.addEventListener('DOMContentLoaded', function () {
+        const canvas = document.getElementById('auth-canvas');
+        if (!canvas) return;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const cards = [];
+        const cardGeometry = new THREE.BoxGeometry(2, 1.25, 0.1);
+        const cardMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, metalness: 0.1 });
+
+        for (let i = 0; i < 30; i++) {
+            const card = new THREE.Mesh(cardGeometry, cardMaterial);
+            card.position.set((Math.random() - 0.5) * 25, (Math.random() - 0.5) * 25, (Math.random() - 0.5) * 25);
+            card.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            const scale = Math.random() * 0.4 + 0.3;
+            card.scale.set(scale, scale, scale);
+            card.userData.spinX = Math.random() * 0.004 + 0.001;
+            card.userData.spinY = Math.random() * 0.004 + 0.001;
+            scene.add(card);
+            cards.push(card);
+        }
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            cards.forEach(card => {
+                card.rotation.x += card.userData.spinX;
+                card.rotation.y += card.userData.spinY;
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    });
+</script>
+{% endblock %}
